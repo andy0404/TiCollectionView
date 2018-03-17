@@ -14,6 +14,7 @@
 #import "TiUISearchBarProxy.h"
 #import "TiCollectionviewHeaderFooterReusableView.h"
 #import "ImageLoader.h"
+#import "TiCollectionviewCollectionViewProxy.h"
 #ifdef USE_TI_UIREFRESHCONTROL
 #import "TiUIRefreshControlProxy.h"
 
@@ -24,6 +25,7 @@
 @interface TiCollectionviewCollectionView ()
 @property (nonatomic, readonly) TiCollectionviewCollectionViewProxy *listViewProxy;
 @property (nonatomic,copy,readwrite) NSString * searchString;
+@property (nonatomic) ScrollDirection scrollDirection;
 @end
 
 static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoint point);
@@ -83,11 +85,21 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
     if (self) {
         canFireScrollEnd = NO;
         canFireScrollStart = YES;
-
         _defaultItemTemplate = NUMUINTEGER(UITableViewCellStyleDefault);
         _defaultSeparatorInsets = UIEdgeInsetsZero;
     }
     return self;
+}
+- (void)configurationSet
+{
+    // This method is called right after all view properties have
+    // been initialized from the view proxy. If the view is dependent
+    // upon any properties being initialized then this is the method
+    // to implement the dependent functionality.
+    
+    [super configurationSet];
+    
+    NSLog(@"[VIEW LIFECYCLE EVENT] configurationSet");
 }
 
 - (void)dealloc
@@ -147,9 +159,12 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
 
 - (UICollectionView *)collectionView
 {
+
     LayoutType layoutType = [TiUtils intValue:[[self proxy] valueForKey:@"layout"] def:kLayoutTypeGrid];
+    
     if (_collectionView == nil) {
-        
+        TiCollectionviewCollectionViewProxy * proxy = [self proxy];
+        self.scrollDirection = proxy.scrollDirection;
         if (layoutType == kLayoutTypeWaterfall) {
             CHTCollectionViewWaterfallLayout* layout = [[CHTCollectionViewWaterfallLayout alloc] init];
             layout.columnCount = [TiUtils intValue:[self.proxy valueForUndefinedKey:@"columnCount"] def:2];
@@ -162,9 +177,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
             UICollectionViewFlowLayout* layout = [[UICollectionViewFlowLayout alloc] init];
             _collectionView = [[UICollectionView alloc] initWithFrame:self.bounds collectionViewLayout:layout];
             
-            ScrollDirection scrollDirection = [TiUtils intValue:[[self proxy] valueForKey:@"scrollDirection"] def:kScrollVertical];
-            
-            if (scrollDirection == kScrollVertical) {
+            if (self.scrollDirection == kScrollVertical) {
                 [(UICollectionViewFlowLayout*) _collectionView.collectionViewLayout setScrollDirection:UICollectionViewScrollDirectionVertical];
                 _collectionView.alwaysBounceVertical = YES;
             } else {
@@ -868,8 +881,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
     
     // If we use horizontal scrolling, we don't need "header" or "footer" views
     LayoutType layoutType = [TiUtils intValue:[[self proxy] valueForKey:@"layout"] def:kLayoutTypeGrid];
-    ScrollDirection scrollDirection = [TiUtils intValue:[[self proxy] valueForKey:@"scrollDirection"] def:kScrollVertical];
-    if (layoutType == kLayoutTypeGrid && scrollDirection == kScrollHorizontal && reusableview != nil) {
+    if (layoutType == kLayoutTypeGrid && self.scrollDirection == kScrollHorizontal && reusableview != nil) {
         return reusableview;
     }
     
@@ -880,8 +892,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
         CGFloat width = [self.collectionView bounds].size.width;
         
         LayoutType layoutType = [TiUtils intValue:[[self proxy] valueForKey:@"layout"] def:kLayoutTypeGrid];
-        ScrollDirection scrollDirection = [TiUtils intValue:[[self proxy] valueForKey:@"scrollDirection"] def:kScrollVertical];
-        if (layoutType == kLayoutTypeGrid && scrollDirection == kScrollHorizontal) {
+        if (layoutType == kLayoutTypeGrid && self.scrollDirection == kScrollHorizontal) {
             width = 0.0;
         }
         
@@ -1025,8 +1036,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
     
     
     LayoutType layoutType = [TiUtils intValue:[[self proxy] valueForKey:@"layout"] def:kLayoutTypeGrid];
-    ScrollDirection scrollDirection = [TiUtils intValue:[[self proxy] valueForKey:@"scrollDirection"] def:kScrollVertical];
-    if (layoutType == kLayoutTypeGrid && scrollDirection == kScrollHorizontal) {
+    if (layoutType == kLayoutTypeGrid && self.scrollDirection == kScrollHorizontal) {
         width = 0.0;
     } else {
         width = self.collectionView.bounds.size.width;

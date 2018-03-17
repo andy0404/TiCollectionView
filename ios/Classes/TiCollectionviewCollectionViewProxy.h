@@ -8,10 +8,13 @@
 #import "TiViewProxy.h"
 #import "TiCollectionviewCollectionSectionProxy.h"
 
+
 @interface TiCollectionviewCollectionViewProxy : TiViewProxy < TiCollectionviewCollectionViewDelegate >
 
 @property (nonatomic, readonly) NSArray *sections;
 @property (nonatomic, readonly) NSNumber *sectionCount;
+@property (nonatomic) int scrollDirection;
+
 
 - (TiCollectionviewCollectionSectionProxy *)sectionForIndex:(NSUInteger)index;
 - (void) deleteSectionAtIndex:(NSUInteger)index;

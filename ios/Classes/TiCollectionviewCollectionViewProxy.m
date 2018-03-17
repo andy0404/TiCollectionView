@@ -6,9 +6,9 @@
  */
 
 #import "TiCollectionviewCollectionViewProxy.h"
-#import "TiCollectionviewCollectionView.h"
 #import "TiUtils.h"
 #import "TiViewTemplate.h"
+#import "TiCollectionviewCollectionView.h"
 
 @interface TiCollectionviewCollectionViewProxy ()
 @property (nonatomic, readwrite) TiCollectionviewCollectionView *listView;
@@ -41,6 +41,7 @@
 
 -(void)_initWithProperties:(NSDictionary *)properties
 {
+    self.scrollDirection = [TiUtils intValue:[properties valueForKey:@"scrollDirection"] def:kScrollVertical];
     [self initializeProperty:@"canScroll" defaultValue:NUMBOOL(YES)];
     [super _initWithProperties:properties];
 }
